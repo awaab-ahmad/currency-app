@@ -291,4 +291,6 @@ class StManagement extends ChangeNotifier {
     thirdPopuAmount = thirdPopuMaking;
     notifyListeners();
   }
+
+  // making the new function for the working overall
 }

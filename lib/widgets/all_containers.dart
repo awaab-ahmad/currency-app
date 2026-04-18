@@ -1,3 +1,4 @@
+import 'package:currency/stateManagement/currency_state.dart';
 import 'package:currency/stateManagement/river_pod_state.dart';
 import 'package:currency/widgets/text_style.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,7 @@ Container popularRatesContainer(
         gText(flag, c, h * 0.025, FontWeight.w600),
         const SizedBox(width: 10),
         gText(
-          '1 $cType = ${result.toStringAsFixed(3)} ${ref.watch(stateManagementClass).firstCurrency}',
+          '1 $cType = ${result.toStringAsFixed(3)} ${ref.watch(currencyState).fromCurrNm}',
           textc,
           12,
           FontWeight.w600,

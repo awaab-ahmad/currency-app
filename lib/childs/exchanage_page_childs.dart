@@ -1,4 +1,7 @@
+import 'package:currency/stateManagement/currency_state.dart';
+import 'package:currency/stateManagement/filtered_state.dart';
 import 'package:currency/stateManagement/icons_state.dart';
+import 'package:currency/stateManagement/popular_state.dart';
 import 'package:currency/stateManagement/river_pod_state.dart';
 import 'package:currency/widgets/all_containers.dart';
 import 'package:currency/widgets/text_field_style.dart';
@@ -11,9 +14,10 @@ Container currencyNameWidget(
   double w,
   BuildContext context,
   WidgetRef ref,
-  final p,
+  TextEditingController tc,
 ) {
   final c = Theme.of(context).colorScheme;
+  final pro = ref.watch(currencyState);
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 08, vertical: 05),
     width: w * 1.0,
@@ -43,14 +47,14 @@ Container currencyNameWidget(
           child: Row(
             mainAxisAlignment: .start,
             children: [
-              gText(p.firstCurrencyFlag, c.surface, h * 0.035, FontWeight.w600),
+              gText(pro.fromCurrFlg, c.surface, h * 0.035, FontWeight.w600),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: .start,
                 mainAxisAlignment: .center,
                 children: [
-                  gText(p.firstCurrency, c.surface, 16, FontWeight.w600),
-                  gText(p.firstCurrSymbolName, c.surface, 12, FontWeight.w600),
+                  gText(pro.fromCurrNm, c.surface, 16, FontWeight.w600),
+                  gText(pro.fromCurrSymbol, c.surface, 12, FontWeight.w600),
                 ],
               ),
             ],
@@ -59,9 +63,10 @@ Container currencyNameWidget(
         const SizedBox(height: 08),
         TextField(
           keyboardType: .text,
-          controller: ref.watch(stateManagementClass).searchController,
+          controller: tc,
           onChanged: (value) {
-            ref.read(stateManagementClass).filteringResults(value);
+            ref.read(filterNotifier.notifier).onChangedFiltering(value);
+            // ref.read(stateManagementClass).filteringResults(value);
           },
           style: textFieldStyle(c.surface, 12),
           decoration: InputDecoration(
@@ -92,9 +97,9 @@ AnimatedContainer popularRatesWidget(
   double w,
   BuildContext context,
   WidgetRef ref,
-  final p,
 ) {
   final c = Theme.of(context).colorScheme;
+  final pro = ref.watch(popuState);
   return AnimatedContainer(
     clipBehavior: .antiAlias,
     duration: Duration(milliseconds: 400),
@@ -126,10 +131,7 @@ AnimatedContainer popularRatesWidget(
                   margin: const EdgeInsets.all(0),
                   shape: RoundedRectangleBorder(borderRadius: .circular(50)),
                   child: IconButton(
-                    onPressed: () {
-                      // ref
-                      //     .read(stateManagementClass)
-                      //     .heightChangingOfContainerPopularRates();
+                    onPressed: () {                     
                       heightChangingOfContainerPopularRates(ref);
                     },
                     visualDensity: VisualDensity(vertical: -4),
@@ -147,27 +149,27 @@ AnimatedContainer popularRatesWidget(
               h,
               c.secondary,
               c.surface,
-              p.firstPopuFlag,
-              'USD',
-              ref.watch(stateManagementClass).firstPopuAmount,
+              pro.firstFlg,
+              pro.firstPopu,
+              pro.firstAmount,
               ref,
             ),
             popularRatesContainer(
               h,
               c.secondary,
               c.surface,
-              p.secondPopuFlag,
-              'GBP',
-              ref.watch(stateManagementClass).secondPopuAmount,    
+              pro.secondFlg,
+              pro.secondPopu,
+              pro.secondAmount, 
               ref,
             ),
             popularRatesContainer(
               h,
               c.secondary,
               c.surface,
-              p.thirdPopuFlag,
-              'EUR',
-              ref.watch(stateManagementClass).thirdPopuAmount,   
+              pro.thirdFlg,
+              pro.thirdPopu,
+              pro.thirdAmount,
               ref,
             ),
           ],

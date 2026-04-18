@@ -1,6 +1,10 @@
 import 'package:currency/childs/currency_page_childs.dart';
 import 'package:currency/pages/exchange_rate_page.dart';
-import 'package:currency/stateManagement/river_pod_state.dart';
+import 'package:currency/stateManagement/added_curreny_state.dart';
+import 'package:currency/stateManagement/currency_state.dart';
+import 'package:currency/stateManagement/filtered_state.dart';
+import 'package:currency/stateManagement/online_state.dart';
+import 'package:currency/stateManagement/popular_state.dart';
 import 'package:currency/theme/theme_logic.dart';
 import 'package:currency/widgets/bottom_sheets.dart';
 import 'package:currency/widgets/button_styles.dart';
@@ -19,12 +23,15 @@ class CurrencyRatePage extends ConsumerStatefulWidget {
 class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
   GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
+  TextEditingController searchController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      changingThemeMode(ref);
-      ref.read(stateManagementClass).currencyRateFetching();
+      ref.read(onlineProvider.notifier).helperWorker(() {
+        ref.read(popuState.notifier).assigningValues();
+      });
     });
   }
 
@@ -33,12 +40,14 @@ class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
     final h = MediaQuery.of(context).size.height;
     final w = MediaQuery.of(context).size.width;
     final c = Theme.of(context).colorScheme;
-    final provider = ref.watch(stateManagementClass);
+    final onlinePro = ref.watch(onlineProvider);
+    final provider = ref.watch(currencyState);
+    final addedCurrenciesProvider = ref.watch(addedCurrenState);
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          leading: ref.watch(stateManagementClass).isLoading == true
+          leading: onlinePro.isLoading == true
               ? Center(
                   child: SizedBox(
                     height: 25,
@@ -68,7 +77,9 @@ class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
           color: c.surface,
           backgroundColor: c.secondary,
           onRefresh: () {
-            return ref.read(stateManagementClass).currencyRateFetching();
+            return ref.read(onlineProvider.notifier).helperWorker(() {
+              ref.read(popuState.notifier).assigningValues();
+            });
           },
           child: SingleChildScrollView(
             physics: BouncingScrollPhysics(
@@ -82,23 +93,36 @@ class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
                   const SizedBox(height: 10),
                   updatedDateWidget(h, w, context, ref),
                   const SizedBox(height: 08),
-                  currencyFromToWidget(h, w, context, ref, provider),
+                  currencyFromToWidget(
+                    h,
+                    w,
+                    context,
+                    ref,
+                    provider,
+                    searchController,
+                    amountController,
+                  ),
                   const SizedBox(height: 08),
                   ElevatedButton(
                     onPressed: () {
-                      ref.read(stateManagementClass).filteredListFilling();
-                      bottomSheet(
-                        context: context,
-                        child: addCurrencySheet(
-                          h,
-                          w,
-                          context,
-                          ref,
-                          provider.searchController,
-                        ),
-                      );
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         FocusManager.instance.primaryFocus?.unfocus();
+                      });
+                      ref
+                          .read(filterNotifier.notifier)
+                          .filteredListFilling(searchController);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        bottomSheet(
+                          context: context,
+                          child: addCurrencySheet(
+                            h,
+                            w,
+                            context,
+                            ref,
+                            searchController,
+                            amountController,
+                          ),
+                        );
                       });
                     },
                     style: outerButtonsStyle(w, h, c.onSecondary, c.outline),
@@ -114,7 +138,13 @@ class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
                   const SizedBox(height: 08),
                   resultWidget(h, w, context, provider),
                   const SizedBox(height: 08),
-                  addedCurrenciesWidget(h, w, context, ref, provider),
+                  addedCurrenciesWidget(
+                    h,
+                    w,
+                    context,
+                    ref,
+                    addedCurrenciesProvider,
+                  ),
                   const SizedBox(height: 08),
                   ElevatedButton(
                     onPressed: () {
@@ -123,10 +153,9 @@ class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
                           builder: (context) => ExchangeRatePage(),
                         ),
                       );
-                      ref.read(stateManagementClass).filteredListFilling();
                       ref
-                          .read(stateManagementClass)
-                          .popularCurrenciesLocation();
+                          .read(filterNotifier.notifier)
+                          .filteredListFilling(searchController);
                     },
                     style: outerButtonsStyle(w, h, c.onSecondary, c.outline),
                     child: Row(

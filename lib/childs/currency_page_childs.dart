@@ -1,26 +1,34 @@
+import 'package:currency/stateManagement/added_curreny_state.dart';
+import 'package:currency/stateManagement/currency_state.dart';
+import 'package:currency/stateManagement/filtered_state.dart';
+import 'package:currency/stateManagement/online_state.dart';
+import 'package:currency/stateManagement/popular_state.dart';
 import 'package:currency/stateManagement/river_pod_state.dart';
 import 'package:currency/widgets/bottom_sheets.dart';
 import 'package:currency/widgets/button_styles.dart';
 import 'package:currency/widgets/text_field_style.dart';
 import 'package:currency/widgets/all_containers.dart';
 import 'package:currency/widgets/text_style.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-Container updatedDateWidget(double h, double w, BuildContext context, WidgetRef ref) {
+Container updatedDateWidget(
+  double h,
+  double w,
+  BuildContext context,
+  WidgetRef ref,
+) {
   final c = Theme.of(context).colorScheme;
-  return Container(   
+  return Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 05),
-    decoration: BoxDecoration(
-      borderRadius: .circular(15),
-      color: c.primary,
-    ),
+    decoration: BoxDecoration(borderRadius: .circular(15), color: c.primary),
     height: h * 0.05,
     width: w * 1.0,
     child: Align(
       alignment: .centerLeft,
       child: gText(
-        'Last Updated: ${ref.watch(stateManagementClass).updatedAt}',
+        'Last Updated: ${ref.watch(currencyState).lastUpdated}',
         c.surface,
         10,
         FontWeight.w600,
@@ -35,6 +43,8 @@ Container currencyFromToWidget(
   BuildContext context,
   WidgetRef ref,
   final provider,
+  TextEditingController tc,
+  TextEditingController amount,
 ) {
   final c = Theme.of(context).colorScheme;
   return Container(
@@ -50,9 +60,12 @@ Container currencyFromToWidget(
         const SizedBox(height: 05),
         TextField(
           keyboardType: .number,
-          controller: provider.amountController,
+          controller: amount,
           onChanged: (value) {
-            ref.read(stateManagementClass).calculatingTheEnteredAmount();
+            ref.read(onlineProvider.notifier).gettingAmountCalculated(amount);
+            ref
+                .read(onlineProvider.notifier)
+                .addedCurrenciesCalculation(amount);
           },
           style: textFieldStyle(c.surface, 12),
           decoration: InputDecoration(
@@ -78,13 +91,15 @@ Container currencyFromToWidget(
           children: [
             ElevatedButton(
               onPressed: () {
-                ref.read(stateManagementClass).filteredListFilling();
-                bottomSheet(
-                  context: context,
-                  child: currencyPickerFromSheet(h, w, context, ref),
-                );
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   FocusManager.instance.primaryFocus?.unfocus();
+                });
+                ref.read(filterNotifier.notifier).filteredListFilling(tc);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  bottomSheet(
+                    context: context,
+                    child: currencyPickerFromSheet(h, w, context, ref, tc),
+                  );
                 });
               },
               style: currencyStyle(w, h, c.secondary),
@@ -92,13 +107,13 @@ Container currencyFromToWidget(
                 mainAxisAlignment: .center,
                 children: [
                   gText(
-                    provider.firstCurrencyFlag,
+                    provider.fromCurrFlg,
                     c.surface,
                     h * 0.03,
                     FontWeight.w600,
                   ),
                   const SizedBox(width: 5),
-                  gText(provider.firstCurrency, c.surface, 16, FontWeight.w700),
+                  gText(provider.fromCurrNm, c.surface, 16, FontWeight.w700),
                   const SizedBox(width: 5),
                   Icon(Icons.arrow_drop_down, color: c.surface, size: w * 0.1),
                 ],
@@ -106,13 +121,15 @@ Container currencyFromToWidget(
             ),
             ElevatedButton(
               onPressed: () {
-                ref.read(stateManagementClass).filteredListFilling();
-                bottomSheet(
-                  context: context,
-                  child: currencyPickerToSheet(h, w, context, ref),
-                );
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   FocusManager.instance.primaryFocus?.unfocus();
+                });
+                ref.read(filterNotifier.notifier).filteredListFilling(tc);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  bottomSheet(
+                    context: context,
+                    child: currencyPickerToSheet(h, w, context, ref, tc),
+                  );
                 });
               },
               style: currencyStyle(w, h, c.secondary),
@@ -120,18 +137,13 @@ Container currencyFromToWidget(
                 mainAxisAlignment: .center,
                 children: [
                   gText(
-                    provider.secondCurrencyFlag,
+                    provider.toCurrFlg,
                     c.surface,
                     h * 0.03,
                     FontWeight.w600,
                   ),
                   const SizedBox(width: 5),
-                  gText(
-                    provider.secondCurrency,
-                    c.surface,
-                    16,
-                    FontWeight.w700,
-                  ),
+                  gText(provider.toCurrNm, c.surface, 16, FontWeight.w700),
                   const SizedBox(width: 5),
                   Icon(Icons.arrow_drop_down, color: c.surface, size: w * 0.1),
                 ],
@@ -144,14 +156,18 @@ Container currencyFromToWidget(
           mainAxisAlignment: .spaceBetween,
           children: [
             gText(
-              '1 ${provider.firstCurrency} = ${ref.watch(stateManagementClass).oneCurrencyRate.toStringAsFixed(5)} ${provider.secondCurrency}',
+              '1 ${provider.fromCurrNm} = ${ref.watch(currencyState).oneCurrencyRate.toStringAsFixed(5)} ${provider.toCurrNm}',
               c.surface,
               14,
               FontWeight.w600,
             ),
             IconButton(
               onPressed: () async {
-                await ref.read(stateManagementClass).swapping();
+                ref.read(currencyState.notifier).helperSwappingReFetching(() {
+                  ref.read(onlineProvider.notifier).helperWorker(() {
+                    ref.read(popuState.notifier).assigningValues();
+                  });
+                });
               },
               visualDensity: VisualDensity(vertical: -4),
               padding: .zero,
@@ -185,17 +201,12 @@ Container resultWidget(double h, double w, BuildContext context, final p) {
           children: [
             Row(
               children: [
-                gText(
-                  p.secondCurrencyFlag,
-                  c.surface,
-                  h * 0.03,
-                  FontWeight.w600,
-                ),
+                gText(p.toCurrFlg, c.surface, h * 0.03, FontWeight.w600),
                 const SizedBox(width: 10),
-                gText(p.secondCurrency, c.surface, 18, FontWeight.w600),
+                gText(p.toCurrNm, c.surface, 18, FontWeight.w600),
               ],
             ),
-            gText(p.formattedResult, c.surface, 22, FontWeight.w700),
+            gText('${p.convertedValue}', c.surface, 22, FontWeight.w700),
           ],
         ),
       ),
@@ -306,8 +317,8 @@ Container addedCurrenciesWidget(
                               IconButton(
                                 onPressed: () {
                                   ref
-                                      .read(stateManagementClass)
-                                      .removeCurrencies(index);
+                                      .read(addedCurrenState.notifier)
+                                      .removingAddedCurrency(index);
                                 },
                                 visualDensity: VisualDensity(vertical: -2),
                                 padding: EdgeInsets.zero,

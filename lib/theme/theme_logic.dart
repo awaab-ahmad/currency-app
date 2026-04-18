@@ -10,19 +10,13 @@ final themeProvider = StateProvider((ref) => ThemeMode.system);
 // making the function for the working of the Theme
 
 void changingThemeMode(WidgetRef ref) {
-  ref
-      .read(themeProvider.notifier)
-      .update(
-        (state) {
-          if(state == ThemeMode.dark) {
-            state = ThemeMode.light;
-            ref.read(themeProviderIcon.notifier).update((state) => 'images/brightness.png');
-          } else {
-            state = ThemeMode.dark;
-            ref.read(themeProviderIcon.notifier).update((state) => 'images/themes.png');
-          }
-          return state;
-        }
-      );  
+  final currentTheme = ref.read(themeProvider);
+  if(currentTheme == ThemeMode.dark) {
+    ref.read(themeProvider.notifier).state = ThemeMode.light;
+    ref.read(themeProviderIcon.notifier).state = 'images/brightness.png';
+  } else {
+    ref.read(themeProvider.notifier).state = ThemeMode.dark;
+    ref.read(themeProviderIcon.notifier).state = 'images/themes.png';
+  }  
   if(kDebugMode) print('Running the function');
 }

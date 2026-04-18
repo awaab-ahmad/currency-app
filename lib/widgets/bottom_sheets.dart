@@ -1,3 +1,8 @@
+import 'package:currency/stateManagement/added_curreny_state.dart';
+import 'package:currency/stateManagement/currency_state.dart';
+import 'package:currency/stateManagement/filtered_state.dart';
+import 'package:currency/stateManagement/online_state.dart';
+import 'package:currency/stateManagement/popular_state.dart';
 import 'package:currency/stateManagement/river_pod_state.dart';
 import 'package:currency/widgets/text_field_style.dart';
 import 'package:currency/widgets/text_style.dart';
@@ -28,6 +33,7 @@ Container currencyPickerFromSheet(
   double w,
   BuildContext context,
   WidgetRef ref,
+  TextEditingController tc,
 ) {
   final c = Theme.of(context).colorScheme;
   return Container(
@@ -61,10 +67,10 @@ Container currencyPickerFromSheet(
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: rf.watch(stateManagementClass).searchController,
+              controller: tc,
               style: textFieldStyle(c.surface, 12),
               onChanged: (value) {
-                rf.read(stateManagementClass).filteringResults(value);
+                ref.read(filterNotifier.notifier).onChangedFiltering(value);
               },
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(
@@ -86,13 +92,11 @@ Container currencyPickerFromSheet(
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                itemCount: rf.watch(stateManagementClass).filteredList.length,
+                itemCount: rf.watch(filterNotifier).filteredList.length,
                 itemBuilder: (context, index) {
-                  final country = rf
-                      .watch(stateManagementClass)
-                      .filteredList[index];
-                  final currencyISOCode =
-                      country.currencies!.first.iso4217Letter;
+                  final country = rf.watch(filterNotifier).filteredList[index];
+                  final countryCode = country.currencies!.first.code;
+                  final countryName = country.name;
                   final currencyFlag = country.emoji;
                   final symbolName =
                       country.currencies!.first.internationalName;
@@ -100,26 +104,43 @@ Container currencyPickerFromSheet(
                     children: [
                       ListTile(
                         onTap: () async {
-                          final r = ref.read(stateManagementClass);
-                          if (kDebugMode) {
-                            print(
-                              'Currency Type: ${country.currencies!.first.internationalName}',
-                            );
-                          }
-                          if (r.firstCurrency != currencyISOCode) {
-                            r.assigningFromCurrency(
-                              currencyISOCode,
-                              currencyFlag,
-                              symbolName,
-                            );
-                            if (!context.mounted) return;
+                          if (ref.read(currencyState).fromCurrNm !=
+                              countryCode) {
+                            ref
+                                .read(currencyState.notifier)
+                                .fromCurrencyChanging(
+                                  currencyFlag,
+                                  countryCode,
+                                  symbolName,
+                                );
                             Navigator.of(context).pop();
-                            await r.currencyRateFetching();
+                            if (kDebugMode) print('Changed');
+                            await ref
+                                .read(onlineProvider.notifier)
+                                .helperWorker(() {
+                                  ref
+                                      .read(popuState.notifier)
+                                      .assigningValues();
+                                });
+                            // await ref.read(onlineProvider.notifier).gettingData();
                           } else {
-                            if (kDebugMode) print('Same currency');
-                            if (!context.mounted) return;
                             Navigator.of(context).pop();
+                            if (kDebugMode) print('Same One');
                           }
+                          // if (r.firstCurrency != currencyISOCode) {
+                          //   r.assigningFromCurrency(
+                          //     currencyISOCode,
+                          //     currencyFlag,
+                          //     symbolName,
+                          //   );
+                          //   if (!context.mounted) return;
+                          //   Navigator.of(context).pop();
+                          //   await r.currencyRateFetching();
+                          // } else {
+                          //   if (kDebugMode) print('Same currency');
+                          //   if (!context.mounted) return;
+                          //   Navigator.of(context).pop();
+                          // }
                         },
                         contentPadding: .symmetric(horizontal: 10),
                         leading: gText(
@@ -129,13 +150,13 @@ Container currencyPickerFromSheet(
                           FontWeight.w600,
                         ),
                         title: gText(
-                          country.currencies!.first.code,
+                          countryCode,
                           c.surface,
                           14,
                           FontWeight.w700,
                         ),
                         subtitle: gText(
-                          country.name.common,
+                          '$countryName',
                           c.surface,
                           12,
                           FontWeight.w600,
@@ -169,6 +190,7 @@ Container currencyPickerToSheet(
   double w,
   BuildContext context,
   WidgetRef ref,
+  TextEditingController tc,
 ) {
   final c = Theme.of(context).colorScheme;
   return Container(
@@ -201,9 +223,9 @@ Container currencyPickerToSheet(
           ),
           const SizedBox(height: 10),
           TextField(
-            controller: rf.watch(stateManagementClass).searchController,
+            controller: tc,
             onChanged: (value) {
-              rf.read(stateManagementClass).filteringResults(value);
+              ref.read(filterNotifier.notifier).onChangedFiltering(value);
             },
             style: textFieldStyle(c.surface, 12),
             decoration: InputDecoration(
@@ -226,12 +248,11 @@ Container currencyPickerToSheet(
           const SizedBox(height: 10),
           Expanded(
             child: ListView.builder(
-              itemCount: rf.watch(stateManagementClass).filteredList.length,
+              itemCount: rf.watch(filterNotifier).filteredList.length,
               itemBuilder: (context, index) {
-                final country = ref
-                    .watch(stateManagementClass)
-                    .filteredList[index];
-                final currencyType = country.currencies!.first.iso4217Letter;
+                final country = ref.watch(filterNotifier).filteredList[index];
+                final countryCode = country.currencies!.first.code;
+                final countryName = country.name;
                 final currencyFlag = country.emoji;
                 final symbolName = country.currencies!.first.internationalName;
                 return Column(
@@ -239,18 +260,31 @@ Container currencyPickerToSheet(
                     ListTile(
                       onTap: () {
                         ref
-                            .read(stateManagementClass)
-                            .assigningToCurrency(
-                              currencyType,
+                            .read(currencyState.notifier)
+                            .toCurrencyChaning(
                               currencyFlag,
+                              countryCode,
                               symbolName,
                             );
-                        ref
-                            .read(stateManagementClass)
-                            .changeOneCurrencyRate(currencyType);
-                        if (!context.mounted) return;
                         Navigator.of(context).pop();
+                        ref
+                            .read(onlineProvider.notifier)
+                            .oneCurrencyRateChanging(countryCode);
                       },
+                      // onTap: () {
+                      //   ref
+                      //       .read(stateManagementClass)
+                      //       .assigningToCurrency(
+                      //         currencyType,
+                      //         currencyFlag,
+                      //         symbolName,
+                      //       );
+                      //   ref
+                      //       .read(stateManagementClass)
+                      //       .changeOneCurrencyRate(currencyType);
+                      //   if (!context.mounted) return;
+                      //   Navigator.of(context).pop();
+                      // },
                       contentPadding: .symmetric(horizontal: 10),
                       leading: gText(
                         country.emoji,
@@ -258,14 +292,9 @@ Container currencyPickerToSheet(
                         h * 0.03,
                         FontWeight.w600,
                       ),
-                      title: gText(
-                        currencyType,
-                        c.surface,
-                        14,
-                        FontWeight.w700,
-                      ),
+                      title: gText(countryCode, c.surface, 14, FontWeight.w700),
                       subtitle: gText(
-                        country.name.common,
+                        '$countryName',
                         c.surface,
                         12,
                         FontWeight.w600,
@@ -299,7 +328,8 @@ Container addCurrencySheet(
   double w,
   BuildContext context,
   WidgetRef ref,
-  TextEditingController searchController,
+  TextEditingController tc,
+  TextEditingController amount,
 ) {
   final c = Theme.of(context).colorScheme;
   return Container(
@@ -312,7 +342,6 @@ Container addCurrencySheet(
     ),
     child: Consumer(
       builder: (context, rf, child) {
-        final state = rf.watch(stateManagementClass);
         return Column(
           crossAxisAlignment: .start,
           children: [
@@ -334,9 +363,9 @@ Container addCurrencySheet(
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: searchController,
+              controller: tc,
               onChanged: (value) {
-                state.filteringResults(value);
+                ref.read(filterNotifier.notifier).onChangedFiltering(value);
                 if (kDebugMode) print(value);
               },
               style: textFieldStyle(c.surface, 12),
@@ -360,20 +389,22 @@ Container addCurrencySheet(
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                itemCount: ref.watch(stateManagementClass).filteredList.length,
+                itemCount: rf.watch(filterNotifier).filteredList.length,
                 itemBuilder: (context, index) {
-                  final country = ref
-                      .watch(stateManagementClass)
-                      .filteredList[index];
+                  final country = rf.watch(filterNotifier).filteredList[index];
                   final flag = country.emoji;
-                  final currency = country.currencies!.first.iso4217Letter;
+                  final currency = country.currencies!.first.code;
                   return Column(
                     children: [
                       ListTile(
                         onTap: () {
                           ref
-                              .read(stateManagementClass)
-                              .addingCurrencies(flag, currency);
+                              .read(addedCurrenState.notifier)
+                              .addingCurrencies(flag, currency, amount);
+                          ref.read(currencyState.notifier).convertedZero();
+                          // ref
+                          //     .read(stateManagementClass)
+                          //     .addingCurrencies(flag, currency);
                           Navigator.of(context).pop();
                         },
                         contentPadding: .symmetric(horizontal: 10),

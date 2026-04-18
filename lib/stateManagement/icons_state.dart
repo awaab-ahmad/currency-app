@@ -17,4 +17,4 @@ void heightChangingOfContainerPopularRates(WidgetRef ref) {
       exchangeRatePopularHeight = 0.08;
       ref.read(iconProvider.notifier).update((st) => Icons.keyboard_arrow_down);
     }  
-  }
+}

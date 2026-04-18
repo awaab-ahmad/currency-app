@@ -1,6 +1,8 @@
 import 'package:currency/childs/currency_page_childs.dart';
 import 'package:currency/childs/exchanage_page_childs.dart';
-import 'package:currency/stateManagement/river_pod_state.dart';
+import 'package:currency/stateManagement/currency_state.dart';
+import 'package:currency/stateManagement/filtered_state.dart';
+import 'package:currency/stateManagement/online_state.dart';
 import 'package:currency/widgets/bottom_sheets.dart';
 import 'package:currency/widgets/button_styles.dart';
 import 'package:currency/widgets/all_containers.dart';
@@ -10,17 +12,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:world_countries/world_countries.dart';
 
-final checkPackage = WorldCountry.list.where((c) => c.independent).toList();
-
 class ExchangeRatePage extends ConsumerWidget {
-  const ExchangeRatePage({super.key});
-
+  ExchangeRatePage({super.key});
+  TextEditingController searchController = TextEditingController();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final h = MediaQuery.of(context).size.height;
     final w = MediaQuery.of(context).size.width;
     final c = Theme.of(context).colorScheme;
-    final p = ref.watch(stateManagementClass);
+    final filterPro = ref.watch(filterNotifier);
+    final currPro = ref.watch(currencyState);
+    final onlinePro = ref.watch(onlineProvider);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -41,11 +43,11 @@ class ExchangeRatePage extends ConsumerWidget {
             crossAxisAlignment: .center,
             children: [
               const SizedBox(height: 10),
-             updatedDateWidget(h, w, context, ref),
+              updatedDateWidget(h, w, context, ref),
               const SizedBox(height: 08),
-              currencyNameWidget(h, w, context, ref, p),
+              currencyNameWidget(h, w, context, ref, searchController),
               const SizedBox(height: 08),
-              popularRatesWidget(h, w, context, ref, p),
+              popularRatesWidget(h, w, context, ref),
               const SizedBox(height: 08),
               Row(
                 mainAxisAlignment: .spaceBetween,
@@ -88,14 +90,18 @@ class ExchangeRatePage extends ConsumerWidget {
                   color: const Color(0x00000000),
                   elevation: 0,
                   child: ListView.builder(
-                    itemCount: p.filteredList.length,
+                    itemCount: filterPro.filteredList.length,
                     itemBuilder: (context, index) {
-                      final country = p.filteredList[index];
+                      final country = filterPro.filteredList[index];
                       final countryCode = country.currencies!.first.code;
                       final countryName = country.name;
-                      final api = p.dataFromWeb;
-                      final amount = api['conversion_rates'][countryCode];
-                      if(kDebugMode) print(amount);
+                      dynamic api = onlinePro.dataFromWeb['conversion_rates'][countryCode]; 
+                      dynamic result;                    
+                      if(api != null) {
+                        result = (1 / api);
+                      } else {
+                        result = 0;
+                      }                                                                                           
                       return Column(
                         children: [
                           ListTile(
@@ -107,7 +113,7 @@ class ExchangeRatePage extends ConsumerWidget {
                               FontWeight.w600,
                             ),
                             title: gText(
-                              '1 ${p.firstCurrency} = $amount $countryCode',
+                              '1 $countryCode = ${result.toStringAsFixed(3)} ${currPro.fromCurrNm}',
                               c.surface,
                               12,
                               FontWeight.w600,

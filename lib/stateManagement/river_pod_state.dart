@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:world_countries/world_countries.dart';
 import 'package:http/http.dart' as http;
 
@@ -212,6 +213,13 @@ class StManagement extends ChangeNotifier {
     notifyListeners();
   }
 
+  // making the helper function for working
+  Future helperFunc() async {
+    await getData();
+    await currencyRateFetching();
+    await storingTasks();
+  }
+
   // making the function for getting the data
   Future<void> currencyRateFetching() async {
     dataFromWeb = '';
@@ -237,6 +245,7 @@ class StManagement extends ChangeNotifier {
       if (kDebugMode) print('Network Error');
       isLoading = false;
     }
+    // await storingTasks();
     notifyListeners();
   }
 
@@ -292,5 +301,50 @@ class StManagement extends ChangeNotifier {
     notifyListeners();
   }
 
-  // making the new function for the working overall
+  // making the new function for storing the data
+  Future<void> storingTasks() async {
+    final pref = await SharedPreferences.getInstance();
+    // now for saving all
+    pref.setString('data', json.encode(dataFromWeb));
+    pref.setString('lastUpdated', updatedAt);
+    pref.setString('firstFlag', firstCurrencyFlag);
+    pref.setString('firstCurr', firstCurrency);
+    pref.setString('firstCurrSymbol', firstCurrSymbolName);
+    pref.setString('secondFlag', secondCurrencyFlag);
+    pref.setString('secondCurr', secondCurrency);
+    pref.setString('secondCurrSymbol', secondCurrSymbolName);
+    pref.setDouble('oneTimeRate', oneCurrencyRate);
+    pref.setDouble('firstPopo', firstPopuAmount);
+    pref.setDouble('secondPopu', secondPopuAmount);
+    pref.setDouble('thirdPopu', thirdPopuAmount);
+    pref.setString('addedCurrencies', jsonEncode(addedCurrencies));
+  }
+
+  Future<void> getData() async {
+    final pref = await SharedPreferences.getInstance();
+    // getting data first
+    final data = pref.getString('data');
+    if (data != null) {
+      final d = json.decode(data);
+      dataFromWeb = d;
+    }
+    updatedAt = pref.getString('lastUpdated') ?? '';
+    firstCurrencyFlag = pref.getString('firstFlag') ?? '';
+    firstCurrency = pref.getString('firstCurr') ?? '';
+    firstCurrSymbolName = pref.getString('firstCurrSymbol') ?? '';
+    secondCurrencyFlag = pref.getString('secondFlag') ?? '';
+    secondCurrency = pref.getString('secondCurr') ?? '';
+    secondCurrSymbolName = pref.getString('secondCurrSymbol') ?? '';
+    oneCurrencyRate = pref.getDouble('oneTimeRate') ?? 0.0;
+    firstPopuAmount = pref.getDouble('firstPopo') ?? 0.0;
+    secondPopuAmount = pref.getDouble('secondPopu') ?? 0.0;
+    thirdPopuAmount = pref.getDouble('thirdPopu') ?? 0.0;
+
+    // making the list to decode first
+    final listData = pref.getString('addedCurrencies');
+    if (listData != null && listData.isNotEmpty) {
+      addedCurrencies = List<Map<String, dynamic>>.from(jsonDecode(listData));
+    }
+    notifyListeners();
+  }
 }

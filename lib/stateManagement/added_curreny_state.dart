@@ -20,17 +20,18 @@ class AddedCurrenyState extends StateNotifier<AddedCurrencies> {
   AddedCurrenyState() : super(AddedCurrencies(addedCurrencies: []));
 
   // making the function for adding the currencies
-  void addingCurrencies(String flag, String name, TextEditingController amount) {
+  void addingCurrencies(
+    String flag,
+    String name,
+    TextEditingController amount,
+  ) {
     amount.clear();
-      final lst = List<Map<String, dynamic>>.from(state.addedCurrencies);
-    for(int i = 0; i < state.addedCurrencies.length; i++) {
-      lst[i] = {
-        ...lst[i],
-        'result': 0
-      };
+    final lst = List<Map<String, dynamic>>.from(state.addedCurrencies);
+    for (int i = 0; i < state.addedCurrencies.length; i++) {
+      lst[i] = {...lst[i], 'result': 0};
     }
     state = state.copyWith(addedCurrencies: lst);
-    final list = state.addedCurrencies;
+    final list = List<Map<String, dynamic>>.from(state.addedCurrencies);
     if (list.length < 5) {
       bool alreadyPresent = false;
       for (int i = 0; i < list.length; i++) {
@@ -61,22 +62,27 @@ class AddedCurrenyState extends StateNotifier<AddedCurrencies> {
 
   void calculatingCurrencyValues(int index, double value) {
     final list = List<Map<String, dynamic>>.from(state.addedCurrencies);
-    
-  
-    list[index] = {
-      ...list[index],
-      'result':value,
-    };
+
+    list[index] = {...list[index], 'result': value};
     state = state.copyWith(addedCurrencies: list);
   }
 
   void calculatingZero(int index) {
     final list = List<Map<String, dynamic>>.from(state.addedCurrencies);
-    list[index] = {
-      ...list[index],
-      'result': 0,
-    };
+    list[index] = {...list[index], 'result': 0};
 
     state = state.copyWith(addedCurrencies: list);
+  }
+
+  void clearingCurrResults() {
+    final list = List<Map<String, dynamic>>.from(state.addedCurrencies);
+    if (state.addedCurrencies.isNotEmpty) {
+      for (int i = 0; i < state.addedCurrencies.length; i++) {
+        list[i] = {...list[i], "result": 0};
+      }
+      state = state.copyWith(addedCurrencies: list);
+    } else {
+      if (kDebugMode) print('The List already empty');
+    }
   }
 }

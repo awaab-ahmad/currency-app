@@ -1,6 +1,9 @@
+import 'package:currency/stateManagement/added_curreny_state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:world_countries/world_countries.dart';
+import 'package:flutter/material.dart';
 
 class CurrencyFromToSection {
   String lastUpdated;
@@ -51,10 +54,11 @@ class CurrencyFromToSection {
 }
 
 // making the RiverPod class
-final currencyState = StateNotifierProvider((ref) => CurrencyState());
+final currencyState = StateNotifierProvider((ref) => CurrencyState(ref));
 
 class CurrencyState extends StateNotifier<CurrencyFromToSection> {
-  CurrencyState()
+  final Ref ref;
+  CurrencyState(this.ref)
     : super(
         CurrencyFromToSection(
           fromCurrFlg: WorldCountry.list
@@ -62,13 +66,16 @@ class CurrencyState extends StateNotifier<CurrencyFromToSection> {
               .emoji,
           toCurrFlg: WorldCountry.list.firstWhere((c) => c.code == 'PAK').emoji,
         ),
-      ) {
-    // ref.listen(onlineProvider, (previous, next) {});
-  }
+      );
 
   // making the function for to change the Currency Types
   // for: From Currency
-  void fromCurrencyChanging(String flg, String name, String symbol) {
+  void fromCurrencyChanging(
+    String flg,
+    String name,
+    String symbol,
+    TextEditingController amount,
+  ) {
     if (name == state.toCurrNm) {
       if (kDebugMode) print('same same');
       String tempFlg = state.fromCurrFlg;
@@ -89,9 +96,20 @@ class CurrencyState extends StateNotifier<CurrencyFromToSection> {
         fromCurrSymbol: symbol,
       );
     }
+    if (amount.text.trim().isNotEmpty) {
+      final rf = ref.read(addedCurrenState.notifier);
+      amount.clear();
+      convertedZero();
+      rf.clearingCurrResults();
+    }
   }
 
-  void toCurrencyChaning(String flg, String name, String symbol) {
+  void toCurrencyChaning(
+    String flg,
+    String name,
+    String symbol,
+    TextEditingController amount,
+  ) {
     if (name == state.fromCurrNm) {
       if (kDebugMode) print('Same same');
       String tempFlg = state.toCurrFlg;
@@ -112,9 +130,15 @@ class CurrencyState extends StateNotifier<CurrencyFromToSection> {
         toCurrSymbol: symbol,
       );
     }
+    if (amount.text.trim().isNotEmpty) {
+      final rf = ref.read(addedCurrenState.notifier);
+      amount.clear();
+      convertedZero();
+      rf.clearingCurrResults();
+    }
   }
 
-  void swapping() {
+  void swapping(TextEditingController amount) {
     String flg = state.toCurrFlg;
     String name = state.toCurrNm;
     String symbol = state.toCurrSymbol;
@@ -126,11 +150,20 @@ class CurrencyState extends StateNotifier<CurrencyFromToSection> {
       fromCurrNm: name,
       fromCurrSymbol: symbol,
     );
+    if (amount.text.trim().isNotEmpty) {
+      amount.clear();
+      convertedZero();
+      final rf = ref.read(addedCurrenState.notifier);
+      rf.clearingCurrResults();
+    }
   }
 
   // Making the helper Function
-  void helperSwappingReFetching(Function() reFetch) async {
-    swapping();
+  void helperSwappingReFetching(
+    Function() reFetch,
+    TextEditingController tc,
+  ) async {
+    swapping(tc);
     await reFetch();
   }
 
@@ -141,6 +174,4 @@ class CurrencyState extends StateNotifier<CurrencyFromToSection> {
   void convertedValueUpdate(String value) {
     state = state.copyWith(convertedValue: value);
   }
-
-  
 }

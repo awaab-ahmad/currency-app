@@ -7,11 +7,10 @@ import 'package:currency/widgets/bottom_sheets.dart';
 import 'package:currency/widgets/button_styles.dart';
 import 'package:currency/widgets/all_containers.dart';
 import 'package:currency/widgets/text_style.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:world_countries/world_countries.dart';
 
+// ignore: must_be_immutable
 class ExchangeRatePage extends ConsumerWidget {
   ExchangeRatePage({super.key});
   TextEditingController searchController = TextEditingController();
@@ -56,6 +55,9 @@ class ExchangeRatePage extends ConsumerWidget {
                   ElevatedButton(
                     style: filterButtonStyle(w, h, c.secondary),
                     onPressed: () {
+                      WidgetsBinding.instance.addPostFrameCallback((_){
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      });
                       showModalBottomSheet(
                         backgroundColor: const Color(0x00000000),
                         isDismissible: true,
@@ -64,7 +66,7 @@ class ExchangeRatePage extends ConsumerWidget {
                         useSafeArea: true,
                         builder: (context) => Padding(
                           padding: EdgeInsets.only(bottom: 20),
-                          child: filterSheet(h, w, context, ref),
+                          child: filterSheet(h, w, context, ),
                         ),
                       );
                     },

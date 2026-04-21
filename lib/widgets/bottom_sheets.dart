@@ -4,6 +4,7 @@ import 'package:currency/stateManagement/filtered_state.dart';
 import 'package:currency/stateManagement/online_state.dart';
 import 'package:currency/stateManagement/popular_state.dart';
 import 'package:currency/stateManagement/river_pod_state.dart';
+import 'package:currency/stateManagement/shared_preferences.dart';
 import 'package:currency/widgets/text_field_style.dart';
 import 'package:currency/widgets/text_style.dart';
 import 'package:flutter/foundation.dart';
@@ -34,6 +35,7 @@ Container currencyPickerFromSheet(
   BuildContext context,
   WidgetRef ref,
   TextEditingController tc,
+  TextEditingController amount,
 ) {
   final c = Theme.of(context).colorScheme;
   return Container(
@@ -112,6 +114,7 @@ Container currencyPickerFromSheet(
                                   currencyFlag,
                                   countryCode,
                                   symbolName,
+                                  amount,
                                 );
                             Navigator.of(context).pop();
                             if (kDebugMode) print('Changed');
@@ -122,25 +125,13 @@ Container currencyPickerFromSheet(
                                       .read(popuState.notifier)
                                       .assigningValues();
                                 });
-                            // await ref.read(onlineProvider.notifier).gettingData();
+                            await ref
+                                .read(storageNotifier.notifier)
+                                .savingMainData();
                           } else {
                             Navigator.of(context).pop();
                             if (kDebugMode) print('Same One');
                           }
-                          // if (r.firstCurrency != currencyISOCode) {
-                          //   r.assigningFromCurrency(
-                          //     currencyISOCode,
-                          //     currencyFlag,
-                          //     symbolName,
-                          //   );
-                          //   if (!context.mounted) return;
-                          //   Navigator.of(context).pop();
-                          //   await r.currencyRateFetching();
-                          // } else {
-                          //   if (kDebugMode) print('Same currency');
-                          //   if (!context.mounted) return;
-                          //   Navigator.of(context).pop();
-                          // }
                         },
                         contentPadding: .symmetric(horizontal: 10),
                         leading: gText(
@@ -191,6 +182,7 @@ Container currencyPickerToSheet(
   BuildContext context,
   WidgetRef ref,
   TextEditingController tc,
+  TextEditingController amount,
 ) {
   final c = Theme.of(context).colorScheme;
   return Container(
@@ -258,33 +250,23 @@ Container currencyPickerToSheet(
                 return Column(
                   children: [
                     ListTile(
-                      onTap: () {
+                      onTap: () async {
                         ref
                             .read(currencyState.notifier)
                             .toCurrencyChaning(
                               currencyFlag,
                               countryCode,
                               symbolName,
+                              amount,
                             );
                         Navigator.of(context).pop();
                         ref
                             .read(onlineProvider.notifier)
                             .oneCurrencyRateChanging(countryCode);
+                        await ref
+                            .read(storageNotifier.notifier)
+                            .savingMainData();
                       },
-                      // onTap: () {
-                      //   ref
-                      //       .read(stateManagementClass)
-                      //       .assigningToCurrency(
-                      //         currencyType,
-                      //         currencyFlag,
-                      //         symbolName,
-                      //       );
-                      //   ref
-                      //       .read(stateManagementClass)
-                      //       .changeOneCurrencyRate(currencyType);
-                      //   if (!context.mounted) return;
-                      //   Navigator.of(context).pop();
-                      // },
                       contentPadding: .symmetric(horizontal: 10),
                       leading: gText(
                         country.emoji,
@@ -327,7 +309,6 @@ Container addCurrencySheet(
   double h,
   double w,
   BuildContext context,
-  WidgetRef ref,
   TextEditingController tc,
   TextEditingController amount,
 ) {
@@ -365,7 +346,7 @@ Container addCurrencySheet(
             TextField(
               controller: tc,
               onChanged: (value) {
-                ref.read(filterNotifier.notifier).onChangedFiltering(value);
+                rf.read(filterNotifier.notifier).onChangedFiltering(value);
                 if (kDebugMode) print(value);
               },
               style: textFieldStyle(c.surface, 12),
@@ -397,15 +378,15 @@ Container addCurrencySheet(
                   return Column(
                     children: [
                       ListTile(
-                        onTap: () {
-                          ref
+                        onTap: () async {
+                          rf
                               .read(addedCurrenState.notifier)
                               .addingCurrencies(flag, currency, amount);
-                          ref.read(currencyState.notifier).convertedZero();
-                          // ref
-                          //     .read(stateManagementClass)
-                          //     .addingCurrencies(flag, currency);
+                          rf.read(currencyState.notifier).convertedZero();
                           Navigator.of(context).pop();
+                          await rf
+                              .read(storageNotifier.notifier)
+                              .addedCurrenciesSaving();
                         },
                         contentPadding: .symmetric(horizontal: 10),
                         leading: gText(
@@ -446,63 +427,94 @@ Container addCurrencySheet(
 }
 
 // making the final sheet of the Filters
-Container filterSheet(double h, double w, BuildContext context, WidgetRef ref) {
+Container filterSheet(double h, double w, BuildContext context) {
   final c = Theme.of(context).colorScheme;
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 08),
-    height: h * 0.4,
+    height: h * 0.25,
     width: w * 0.9,
     decoration: BoxDecoration(
       color: c.primaryContainer,
       borderRadius: BorderRadius.circular(20),
     ),
-    child: Column(
-      children: [
-        SizedBox(
-          height: 07,
-          width: 70,
-          child: Card(margin: EdgeInsets.zero, color: c.surface),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: .spaceBetween,
-          children: [
-            gText('Sort By', c.surface, 14, FontWeight.w600),
-            Icon(Icons.filter_alt_outlined, color: c.surface, size: h * 0.045),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: ListView.builder(
-            itemCount: ref.watch(stateManagementClass).filterTypes.length,
-            itemBuilder: (context, index) {
-              final value = ref.read(stateManagementClass).filterTypes[index];
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 05,
-                ),
-                margin: EdgeInsets.symmetric(vertical: 04),
-                width: w * 1.0,
-                height: h * 0.055,
-                decoration: BoxDecoration(
-                  color: c.outlineVariant,
-                  borderRadius: .circular(12),
-                ),
-                child: Align(
-                  alignment: .centerLeft,
+    child: Consumer(
+      builder: (context, rf, child) => Column(
+        children: [
+          SizedBox(
+            height: 07,
+            width: 70,
+            child: Card(margin: EdgeInsets.zero, color: c.surface),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: .spaceBetween,
+            children: [
+              gText('Sort By', c.surface, 14, FontWeight.w600),
+              Icon(
+                Icons.filter_alt_outlined,
+                color: c.surface,
+                size: h * 0.045,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+              itemCount: rf.read(filterNotifier).sortFilter.length,
+              itemBuilder: (context, index) {
+                final value = rf.read(filterNotifier).sortFilter[index];
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                    alignment: .centerLeft,
+                    backgroundColor: c.primary,
+                    side: BorderSide(
+                      width: 1.8,
+                      color: rf.watch(filterNotifier).sortFilterValue == index
+                          ? c.surface
+                          : const Color(0x00000000),
+                    ),
+                    shape: RoundedRectangleBorder(borderRadius: .circular(20)),
+                  ),
+                  onPressed: () {
+                    rf.read(filterNotifier.notifier).changingSortType(index);
+                    rf.read(filterNotifier.notifier).filteringData();
+                    Navigator.of(context).pop();
+                  },
                   child: gText(
                     '${index + 1}: $value',
                     c.surface,
                     12,
                     FontWeight.w600,
                   ),
-                ),
-              );
-            },
+                );
+                // return Container(
+                //   padding: const EdgeInsets.symmetric(
+                //     horizontal: 10,
+                //     vertical: 05,
+                //   ),
+                //   margin: EdgeInsets.symmetric(vertical: 04),
+                //   width: w * 1.0,
+                //   height: h * 0.055,
+                //   decoration: BoxDecoration(
+                //     color: c.outlineVariant,
+                //     borderRadius: .circular(12),
+                //   ),
+                //   child: Align(
+                //     alignment: .centerLeft,
+                //     child: gText(
+                //       '${index + 1}: $value',
+                //       c.surface,
+                //       12,
+                //       FontWeight.w600,
+                //     ),
+                //   ),
+                // );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

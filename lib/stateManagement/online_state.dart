@@ -39,8 +39,7 @@ class OnlineState extends StateNotifier<DataFromWebsite> {
   }
 
   Future<void> gettingData() async {
-    final rf = ref.read(currencyState);
-    state = state.copyWith(dataFromWeb: '');
+    final rf = ref.read(currencyState);  
     if (kDebugMode) print('One Currency Rate value: ${rf.oneCurrencyRate}');
     if (kDebugMode) print('To Curr: ${rf.toCurrNm}');
     try {
@@ -74,6 +73,7 @@ class OnlineState extends StateNotifier<DataFromWebsite> {
 
   // Making the function for the value conversion
   void gettingAmountCalculated(TextEditingController value) {
+    if(kDebugMode) print('Data From Web: ${state.dataFromWeb}');
     final r = ref.read(currencyState);
     final numFormat = NumberFormat('#,##0.00');
     if (value.text.trim().isEmpty) {

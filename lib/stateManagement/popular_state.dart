@@ -1,4 +1,5 @@
 import 'package:currency/stateManagement/online_state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:world_countries/world_countries.dart';
@@ -55,6 +56,7 @@ class PopularStateManager extends StateNotifier<PopularState> {
   PopularStateManager(this.ref) : super(PopularState());
 
   void assigningValues() {
+    if(kDebugMode) print('Values are going to get assigned');
     final rf = ref.read(onlineProvider);
     final api = rf.dataFromWeb['conversion_rates'];
     state = state.copyWith(

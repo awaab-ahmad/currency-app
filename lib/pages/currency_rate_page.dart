@@ -5,6 +5,7 @@ import 'package:currency/stateManagement/currency_state.dart';
 import 'package:currency/stateManagement/filtered_state.dart';
 import 'package:currency/stateManagement/online_state.dart';
 import 'package:currency/stateManagement/popular_state.dart';
+import 'package:currency/stateManagement/shared_preferences.dart';
 import 'package:currency/theme/theme_logic.dart';
 import 'package:currency/widgets/bottom_sheets.dart';
 import 'package:currency/widgets/button_styles.dart';
@@ -29,9 +30,7 @@ class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(onlineProvider.notifier).helperWorker(() {
-        ref.read(popuState.notifier).assigningValues();
-      });
+      ref.read(storageNotifier.notifier).helperOfAll();           
     });
   }
 
@@ -117,8 +116,7 @@ class _CurrencyRatePage extends ConsumerState<CurrencyRatePage> {
                           child: addCurrencySheet(
                             h,
                             w,
-                            context,
-                            ref,
+                            context,                           
                             searchController,
                             amountController,
                           ),

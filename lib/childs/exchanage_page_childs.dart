@@ -66,7 +66,7 @@ Container currencyNameWidget(
           controller: tc,
           onChanged: (value) {
             ref.read(filterNotifier.notifier).onChangedFiltering(value);
-            // ref.read(stateManagementClass).filteringResults(value);
+            ref.read(filterNotifier.notifier).changingSortType(0);
           },
           style: textFieldStyle(c.surface, 12),
           decoration: InputDecoration(

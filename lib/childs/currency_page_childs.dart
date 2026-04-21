@@ -4,6 +4,7 @@ import 'package:currency/stateManagement/filtered_state.dart';
 import 'package:currency/stateManagement/online_state.dart';
 import 'package:currency/stateManagement/popular_state.dart';
 import 'package:currency/stateManagement/river_pod_state.dart';
+import 'package:currency/stateManagement/shared_preferences.dart';
 import 'package:currency/widgets/bottom_sheets.dart';
 import 'package:currency/widgets/button_styles.dart';
 import 'package:currency/widgets/text_field_style.dart';
@@ -98,7 +99,14 @@ Container currencyFromToWidget(
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   bottomSheet(
                     context: context,
-                    child: currencyPickerFromSheet(h, w, context, ref, tc),
+                    child: currencyPickerFromSheet(
+                      h,
+                      w,
+                      context,
+                      ref,
+                      tc,
+                      amount,
+                    ),
                   );
                 });
               },
@@ -128,7 +136,14 @@ Container currencyFromToWidget(
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   bottomSheet(
                     context: context,
-                    child: currencyPickerToSheet(h, w, context, ref, tc),
+                    child: currencyPickerToSheet(
+                      h,
+                      w,
+                      context,
+                      ref,
+                      tc,
+                      amount,
+                    ),
                   );
                 });
               },
@@ -167,7 +182,7 @@ Container currencyFromToWidget(
                   ref.read(onlineProvider.notifier).helperWorker(() {
                     ref.read(popuState.notifier).assigningValues();
                   });
-                });
+                }, amount);
               },
               visualDensity: VisualDensity(vertical: -4),
               padding: .zero,
@@ -315,10 +330,13 @@ Container addedCurrenciesWidget(
                               ),
                               const SizedBox(width: 05),
                               IconButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   ref
                                       .read(addedCurrenState.notifier)
                                       .removingAddedCurrency(index);
+                                  await ref
+                                      .read(storageNotifier.notifier)
+                                      .addedCurrenciesSaving();
                                 },
                                 visualDensity: VisualDensity(vertical: -2),
                                 padding: EdgeInsets.zero,

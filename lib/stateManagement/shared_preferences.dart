@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:world_countries/world_countries.dart';
 
 class Shared {}
 
@@ -76,13 +77,17 @@ class Storage extends StateNotifier<Shared> {
     final rfOnline = ref.read(onlineProvider);
     final rfPopu = ref.read(popuState);
     final rfCurr = ref.read(addedCurrenState);
-    rf.lastUpdated = pref.getString('updated') ?? '';
-    rf.fromCurrFlg = pref.getString('FromFlag') ?? '';
-    rf.fromCurrNm = pref.getString('FromCurr') ?? '';
-    rf.fromCurrSymbol = pref.getString('FromCurrSym') ?? '';
-    rf.toCurrFlg = pref.getString('toCurrFlag') ?? '';
-    rf.toCurrNm = pref.getString('toCurr') ?? '';
-    rf.toCurrSymbol = pref.getString('toCurrSym') ?? '';
+    rf.lastUpdated = pref.getString('updated') ?? '--';
+    rf.fromCurrFlg =
+        pref.getString('FromFlag') ??
+        WorldCountry.list.firstWhere((e) => e.code == 'USA').emoji;
+    rf.fromCurrNm = pref.getString('FromCurr') ?? 'USD';
+    rf.fromCurrSymbol = pref.getString('FromCurrSym') ?? 'United States Dollar';
+    rf.toCurrFlg =
+        pref.getString('toCurrFlag') ??
+        WorldCountry.list.firstWhere((e) => e.code == 'PAK').emoji;
+    rf.toCurrNm = pref.getString('toCurr') ?? 'PKR';
+    rf.toCurrSymbol = pref.getString('toCurrSym') ?? 'Pakistani Rupee';
     rf.oneCurrencyRate = pref.getDouble('oneRate') ?? 0.0;
     rfPopu.firstAmount = pref.getDouble('popuOne') ?? 0.0;
     rfPopu.secondAmount = pref.getDouble('popuTwo') ?? 0.0;

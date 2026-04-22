@@ -1,5 +1,4 @@
 import 'package:currency/stateManagement/currency_state.dart';
-import 'package:currency/stateManagement/river_pod_state.dart';
 import 'package:currency/widgets/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

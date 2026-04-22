@@ -54,7 +54,7 @@ class OnlineState extends StateNotifier<DataFromWebsite> {
         if (kDebugMode) print('Data Received');
         rf.oneCurrencyRate = state.dataFromWeb['conversion_rates'][rf.toCurrNm];
         final dateTime = DateTime.now().toLocal();
-        rf.lastUpdated = DateFormat('MMMM dd yyyy h:mm a').format(dateTime);
+        rf.lastUpdated = DateFormat('MMMM dd, yyyy h:mm a').format(dateTime);
       } else {
         if (kDebugMode) print('Server Error');
       }

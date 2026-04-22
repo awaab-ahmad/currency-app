@@ -3,14 +3,12 @@ import 'package:currency/stateManagement/currency_state.dart';
 import 'package:currency/stateManagement/filtered_state.dart';
 import 'package:currency/stateManagement/online_state.dart';
 import 'package:currency/stateManagement/popular_state.dart';
-import 'package:currency/stateManagement/river_pod_state.dart';
 import 'package:currency/stateManagement/shared_preferences.dart';
 import 'package:currency/widgets/bottom_sheets.dart';
 import 'package:currency/widgets/button_styles.dart';
 import 'package:currency/widgets/text_field_style.dart';
 import 'package:currency/widgets/all_containers.dart';
 import 'package:currency/widgets/text_style.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

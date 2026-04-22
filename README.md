@@ -10,6 +10,7 @@ The Features this currency Converter app is using:
 > Clean UI
 > Storing api results
 
+<img width="1920" height="1080" alt="Currency App Globit" src="https://github.com/user-attachments/assets/83905cbc-2518-4921-8d04-cc2a9b40fa0f" />
 
 
 

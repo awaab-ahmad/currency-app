@@ -10,7 +10,6 @@ Text gText(String s, Color c, double sz, FontWeight fw) {
 }
 
 // making the style of the label and hint text and simple text for TextField
-
 TextStyle textFieldStyle(Color c, double sz) {
   return GoogleFonts.poppins(
     color: c,

@@ -4,11 +4,24 @@ import 'package:currency/stateManagement/filtered_state.dart';
 import 'package:currency/stateManagement/online_state.dart';
 import 'package:currency/stateManagement/popular_state.dart';
 import 'package:currency/stateManagement/shared_preferences.dart';
-import 'package:currency/widgets/text_field_style.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:world_countries/world_countries.dart';
+
+OutlineInputBorder focusedBorder(Color c) {
+  return OutlineInputBorder(
+    borderRadius: .circular(20),
+    borderSide: BorderSide(width: 1.5, color: c),
+  );
+}
+
+OutlineInputBorder enabledBorder(Color c) {
+  return OutlineInputBorder(
+    borderRadius: .circular(15),
+    borderSide: BorderSide(width: 1.5, color: c),
+  );
+}
 
 // making the bottomSheet Structure
 Future bottomSheet({required BuildContext context, required Widget child}) {

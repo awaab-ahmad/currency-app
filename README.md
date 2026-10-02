@@ -26,7 +26,6 @@
 
 ## 🚀 Getting Started
 ### Prerequisites
- 
 - Flutter SDK installed
 - Android Studio or VS Code
 - A configured Android emulator or physical device

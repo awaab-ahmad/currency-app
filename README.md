@@ -19,14 +19,12 @@
 <img width="1280" height="769" alt="iPad Pro 12 9_ - 13" src="https://github.com/user-attachments/assets/8fe3b21f-d46a-4bc5-a2a1-293bcc28560e" />
 
 ## 🛠️ Built With
- 
 - Flutter
 - Dart
 - Currency Exchange API
 - Material Design
 
 ## 🚀 Getting Started
- 
 ### Prerequisites
  
 - Flutter SDK installed
@@ -34,14 +32,12 @@
 - A configured Android emulator or physical device
 
 ## 🎯 Future Improvements
- 
 - Currency search functionality
 - Exchange rate history charts
 - Favorite currencies
 - Offline rate caching
  
 ## 👨‍💻 Author
-
 Developed by Awaab Ahmad  using Flutter.
  
 

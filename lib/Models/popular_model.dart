@@ -1,7 +1,4 @@
-import 'package:currency/stateManagement/online_state.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+
 import 'package:world_countries/world_countries.dart';
 
 class PopularState {
@@ -46,24 +43,4 @@ class PopularState {
       thirdAmount: thirdAmount ?? this.thirdAmount,
     );
   }
-}
-
-
-final popuState = StateNotifierProvider((ref) => PopularStateManager(ref));
-
-class PopularStateManager extends StateNotifier<PopularState> {
-  final Ref ref;
-  PopularStateManager(this.ref) : super(PopularState());
-
-  void assigningValues() {
-    if(kDebugMode) print('Values are going to get assigned');
-    final rf = ref.read(onlineProvider);
-    final api = rf.dataFromWeb['conversion_rates'];
-    state = state.copyWith(
-      firstAmount: (1 / api[state.firstPopu] as num).toDouble(),
-      secondAmount: (1 / api[state.secondPopu] as num).toDouble(),
-      thirdAmount: (1 / api[state.thirdPopu] as num).toDouble(),
-    );
-  }
-
 }
